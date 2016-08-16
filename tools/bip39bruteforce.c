@@ -28,18 +28,12 @@ clock_t start;
 int main(int argc, char **argv)
 {
 	if (argc != 2 && argc != 3) {
-		fprintf(stderr, "Usage: bip39bruteforce address [mnemonic]\n");
+		fprintf(stderr, "Usage: bip39bruteforce address password\n");
 		return 1;
 	}
 	const char *address = argv[1];
-	const char *mnemonic, *item;
-	if (argc == 3) {
-		mnemonic = argv[2];
-		item = "passphrase";
-	} else {
-		mnemonic = NULL;
-		item = "mnemonic";
-	}
+	const char *mnemonic = NULL, *item = "mnemonic";
+	const char *password = argv[2];
 	if (mnemonic && !mnemonic_check(mnemonic)) {
 		fprintf(stderr, "\"%s\" is not a valid mnemonic\n", mnemonic);
 		return 2;
@@ -61,13 +55,13 @@ int main(int argc, char **argv)
 		if (mnemonic) {
 			mnemonic_to_seed(mnemonic, iter, seed, NULL);
 		} else {
-			mnemonic_to_seed(iter, "", seed, NULL);
+			mnemonic_to_seed(iter, password, seed, NULL);
 		}
 		hdnode_from_seed(seed, 512 / 8, SECP256K1_NAME, &node);
 		hdnode_private_ckd_prime(&node, 44);
 		hdnode_private_ckd_prime(&node, 0);
 		hdnode_private_ckd_prime(&node, 0);
-		hdnode_private_ckd(&node, 0);
+		hdnode_private_ckd(&node, 1);
 		hdnode_private_ckd(&node, 0);
 		hdnode_fill_public_key(&node);
 		ecdsa_get_pubkeyhash(node.public_key, pubkeyhash);
